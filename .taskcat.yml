@@ -1,33 +1,47 @@
+general:
+  s3_regional_buckets: true
 project:
-  name: cfn-sample-template
-  owner: quickstart@amazon.com
-  package_lambda: false
-  regions:
-  - ap-northeast-1
-  - ap-northeast-2
-  - ap-southeast-1
-  - ap-southeast-2
-  - eu-central-1
-  - eu-west-1
-  - sa-east-1
-  - us-east-1
-  - us-west-1
-  - us-west-2
+  name: cfn-ps-mongodb-atlas
+  owner: quickstart-eng@amazon.com
+  shorten_stack_name: true
 tests:
-  sample:
-    parameters:
-      Param1: 'Inputs to Stack'
-      # Examples: of other taskcat dynamic input parameters for more into see http://taskcat.io
-      #
-      #      AvailabilityZones: $[taskcat_genaz_3]
-      #      ByteValue: 1
-      #      PasswordA: $[taskcat_genpass_8A]
-      #      PasswordB: $[taskcat_genpass_32S]
-      #      RandomNumber: $[taskcat_random-numbers]
-      #      RandomString: $[taskcat_random-string]
-      #      StackName: TestStack
-      #      UUID: $[taskcat_genuuid]
-      #
+  mdb-atlas:
     regions:
-    - us-east-2
-    template: templates/another-workload.template.yaml
+      - us-east-1
+    parameters:
+      OrgId: override
+      ProjectName: tcat-$[taskcat_random-string]-$[taskcat_current_region]
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3BucketRegion: $[taskcat_current_region]
+      ClusterName: tcat-$[taskcat_random-string]-$[taskcat_current_region]
+      ClusterRegion: US_EAST_1
+      DatabasePassword: $[taskcat_genpass_12]
+    template: templates/mongodb-atlas-main.template.yaml
+  mdb-atlas-vpc:
+    regions:
+      - us-west-1
+    parameters:
+      OrgId: override
+      ProjectName: tcat-$[taskcat_random-string]-$[taskcat_current_region]
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3BucketRegion: $[taskcat_current_region]
+      RouteTableCIDRBlock: 10.8.0.0/21
+      AvailabilityZones: $[taskcat_genaz_2]
+      ClusterName: tcat-$[taskcat_random-string]-$[taskcat_current_region]
+      ClusterRegion: US_WEST_1
+      DatabasePassword: $[taskcat_genpass_12]
+    template: templates/mongodb-atlas-peering-newvpc.template.yaml
+  mdb-atlas-pvt-endpoint:
+    regions:
+      - us-east-2
+    parameters:
+      OrgId: override
+      ProjectName: tcat-$[taskcat_random-string]-$[taskcat_current_region]
+      QSS3BucketName: $[taskcat_autobucket]
+      QSS3BucketRegion: $[taskcat_current_region]
+      ClusterRegion: US_EAST_2
+      AvailabilityZone: us-east-2a
+      VPCRegion: $[taskcat_current_region]
+      ClusterName: tcat-$[taskcat_random-string]-$[taskcat_current_region]
+      DatabasePassword: $[taskcat_genpass_12]
+    template: templates/mongodb-atlas.private-endpoint.template.yaml
