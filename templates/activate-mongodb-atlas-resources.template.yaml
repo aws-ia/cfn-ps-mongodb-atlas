@@ -1,0 +1,199 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: MongoDB Resource activation. (qs-1tq8f0hrt)
+Metadata:
+  cfn-lint: { config: { ignore_checks: [ W9002, W9003, W9006, E3001, E1010 ] } }
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: MongoDB Region
+        Parameters:
+          - Region
+Mappings:
+  DefaultConfiguration:
+    MongoDB:
+      PublisherID: bb989456c78c398a858fef18f2ca1bfc1fbba082
+Parameters:
+  Region:
+    Default: us-east-1
+    Description: The AWS Region where resources would be activated
+    Type: String
+    AllowedValues:
+    - "ap-south-2"
+    - "ap-southeast-4"
+    - "eu-central-2"
+    - "eu-south-2"
+    - "me-central-1"
+    - "us-east-1"
+    - "us-east-2"
+    - "ca-central-1"
+    - "us-west-1"
+    - "us-west-2"
+    - "sa-east-1"
+    - "ap-south-1"
+    - "ap-east-1"
+    - "ap-southeast-1"
+    - "ap-southeast-2"
+    - "ap-southeast-3"
+    - "ap-northeast-1"
+    - "ap-northeast-2"
+    - "ap-northeast-3"
+    - "eu-central-1"
+    - "eu-west-1"
+    - "eu-north-1"
+    - "eu-west-1"
+    - "eu-west-2"
+    - "eu-west-3"
+    - "eu-south-1"
+    - "me-south-1"
+    - "af-south-1"
+Resources:
+  ActivateClusterType:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      PublicTypeArn: !Sub
+      - 'arn:aws:cloudformation:${Region}::type/resource/${publisher_id}/MongoDB-Atlas-Cluster'
+      - publisher_id: !FindInMap
+          - DefaultConfiguration
+          - MongoDB
+          - PublisherID
+      Type: RESOURCE
+      TypeName: MongoDB::Atlas::Cluster
+      ExecutionRoleArn: !GetAtt MongoDBCustomResourceExecutionRole.Arn
+  ActivateServerlessInstanceType:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      PublicTypeArn: !Sub 
+      - 'arn:aws:cloudformation:${Region}::type/resource/${publisher_id}/MongoDB-Atlas-ServerlessInstance'
+      - publisher_id: !FindInMap
+          - DefaultConfiguration
+          - MongoDB
+          - PublisherID
+        Type: RESOURCE
+      TypeName: MongoDB::Atlas::ServerlessInstance
+      ExecutionRoleArn: !GetAtt MongoDBCustomResourceExecutionRole.Arn
+  ActivateProjectIpAccessListType:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      PublicTypeArn: !Sub
+      - 'arn:aws:cloudformation:${Region}::type/resource/${publisher_id}/MongoDB-Atlas-ProjectIpAccessList'
+      - publisher_id: !FindInMap
+          - DefaultConfiguration
+          - MongoDB
+          - PublisherID
+        Type: RESOURCE
+      TypeName: MongoDB::Atlas::ProjectIpAccessList
+      ExecutionRoleArn: !GetAtt MongoDBCustomResourceExecutionRole.Arn
+  ActivateDatabaseUserType:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      PublicTypeArn: !Sub
+      - 'arn:aws:cloudformation:${Region}::type/resource/${publisher_id}/MongoDB-Atlas-DatabaseUser'
+      - publisher_id: !FindInMap
+          - DefaultConfiguration
+          - MongoDB
+          - PublisherID
+        Type: RESOURCE
+      TypeName: MongoDB::Atlas::DatabaseUser
+      ExecutionRoleArn: !GetAtt MongoDBCustomResourceExecutionRole.Arn
+  ActivateProjectType:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      PublicTypeArn: !Sub
+      - 'arn:aws:cloudformation:${Region}::type/resource/${publisher_id}/MongoDB-Atlas-Project'
+      - publisher_id: !FindInMap
+          - DefaultConfiguration
+          - MongoDB
+          - PublisherID
+        Type: RESOURCE
+      TypeName: MongoDB::Atlas::Project
+      ExecutionRoleArn: !GetAtt MongoDBCustomResourceExecutionRole.Arn
+  ActivateNetworkPeeringType:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      PublicTypeArn: !Sub
+      - 'arn:aws:cloudformation:${Region}::type/resource/${publisher_id}/MongoDB-Atlas-NetworkPeering'
+      - publisher_id: !FindInMap
+          - DefaultConfiguration
+          - MongoDB
+          - PublisherID
+        Type: RESOURCE
+      TypeName: MongoDB::Atlas::NetworkPeering
+      ExecutionRoleArn: !GetAtt MongoDBCustomResourceExecutionRole.Arn
+  ActivatePrivateEndpointType:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      PublicTypeArn: !Sub
+      - 'arn:aws:cloudformation:${Region}::type/resource/${publisher_id}/MongoDB-Atlas-PrivateEndpoint'
+      - publisher_id: !FindInMap
+          - DefaultConfiguration
+          - MongoDB
+          - PublisherID
+        Type: RESOURCE
+      TypeName: MongoDB::Atlas::PrivateEndpoint
+      ExecutionRoleArn: !GetAtt MongoDBPrivateEndpointExecutionRole.Arn
+  ActivateNetworkContainerType:
+    Type: AWS::CloudFormation::TypeActivation
+    Properties:
+      PublicTypeArn: !Sub
+      - 'arn:aws:cloudformation:${Region}::type/resource/${publisher_id}/MongoDB-Atlas-NetworkContainer'
+      - publisher_id: !FindInMap
+          - DefaultConfiguration
+          - MongoDB
+          - PublisherID
+        Type: RESOURCE
+      TypeName: MongoDB::Atlas::NetworkContainer
+      ExecutionRoleArn: !GetAtt MongoDBCustomResourceExecutionRole.Arn
+  MongoDBCustomResourceExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      MaxSessionDuration: 8400
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - "resources.cloudformation.amazonaws.com"
+            Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+        - PolicyName: ResourceTypePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource: !Sub arn:${AWS::Partition}:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*
+  MongoDBPrivateEndpointExecutionRole:
+    Metadata:
+      cfn-lint:
+        config:
+          ignore_checks:
+            - EIAMPolicyWildcardResource
+          ignore_reasons:
+            EIAMPolicyWildcardResource: >-
+              Create and Delete VPC Endpoint permissions are necessary.
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - resources.cloudformation.amazonaws.com
+            Action:
+                - 'sts:AssumeRole'
+      Path: "/"
+      Policies:
+        - PolicyName: vpcEndpointPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ec2:CreateVpcEndpoint'
+                  - 'ec2:DeleteVpcEndpoints'
+                  - "secretsmanager:GetSecretValue"
+                Resource: '*'
