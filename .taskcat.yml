@@ -1,7 +1,7 @@
 general:
   s3_regional_buckets: true
 project:
-  name: quickstart-mongodb-atlas
+  name: cfn-ps-mongodb-atlas
   owner: quickstart-eng@amazon.com
   shorten_stack_name: true
 tests:
